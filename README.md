@@ -19,7 +19,7 @@ This pipeline processes four key datasets related to retail operations and promo
 
 ---
 
-## ✨ Key Features & Technical Highlights
+## Key Features & Technical Highlights
 
 ### 1. Advanced Feature Engineering
 - **Time Series:** Sales timestamps were decomposed into cyclical features (`hour_sin`, `hour_cos`, `cycle_day_x`) to capture daily and weekly periodicity.
