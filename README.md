@@ -128,6 +128,7 @@ Outcome: Tests confirmed that the filtering correctly retains only records that 
 omplete, unified feature set.
 
 Prerequisites and Setup
+
 To run this project, you need the following:
 
 1. Azure Resources
