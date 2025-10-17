@@ -1,182 +1,123 @@
 # supermarket-transaction-data
 Sales Forecasting and Promotional Effectiveness Analysis
-🎯 Project Goal
-This project utilized PySpark on a Databricks platform to build and evaluate a Machine Learning model for forecasting retail sales amount. The core objective was to move beyond simple prediction and create a "What-If" analysis tool to assess the predicted lift (or drop) in sales resulting from different promotional strategies (vouchers, in-store displays, and feature placement).
 
-📊 Dataset and Architecture
-This pipeline processes four distinct datasets related to retail operations and promotions.
+## 🎯 Project Goal
+This project uses PySpark on a Databricks platform to build and evaluate a machine learning model for forecasting retail sales. The objective goes beyond simple prediction by enabling a "What-If" analysis tool to estimate the lift or drop in sales resulting from different promotional strategies (vouchers, in-store displays, and feature placement).
 
-Layer
+---
 
-Source Datasets
+## Dataset and Architecture Overview
+This pipeline processes four key datasets related to retail operations and promotions.
 
-Key Transformation / Output
+### Layer Overview
 
-Silver Layer
+| Layer        | Source Datasets                                | Key Transformations / Outputs                                                                 |
+|--------------|-----------------------------------------------|------------------------------------------------------------------------------------------------|
+| **Silver**   | Sales, Item, Supermarkets, Promotion          | Data cleaning and feature engineering (time features, location indexing, categorical encoding). |
+| **Gold**     | Silver layer views                            | Four-way join (Sales, Item, Supermarket, Promotion) to create the unified feature table for ML training. |
+| **ML Model** | Gold layer                                    | Trains machine learning models using the unified feature table. |
 
-Sales, Item, Supermarkets, Promotion
+---
 
-Data Cleaning, Feature Engineering (Time, Location Indexing, Categorical Encoding).
+## ✨ Key Features & Technical Highlights
 
-Gold Layer
+### 1. Advanced Feature Engineering
+- **Time Series:** Sales timestamps were decomposed into cyclical features (`hour_sin`, `hour_cos`, `cycle_day_x`) to capture daily and weekly periodicity.
+- **Categorical Encoding:** Item properties (`brand`, `type`) and Supermarket location (`postal_code`) were converted to numerical indices for use in the model.
+- **Promotion Indexing:** Non-numerical promotional features (`feature`, `display`) were indexed to create `promo_feature_indexed` and `promo_display_indexed`.
 
-Silver Layer Views
+### 2. Robust Gold Layer Unification
+- The final feature table (`gold_df`) was created using a multi-step Spark SQL process involving the four tables (Sales, Item, Supermarkets, Promotion). 
+- A critical final `WHERE` clause ensures that only sales records with a corresponding valid promotion record are retained, effectively performing a secure INNER JOIN on the promotion data.
 
-4-Way Join (Sales, Item, Supermarket, Promotion) to create the unified feature table for ML training.
+### 3. Model Training and Evaluation
+- **Model Used:** Random Forest Regression (PySpark MLlib)
+- **"What-If" Analysis:** The deployed model predicts sales for a target product (`3000005040`) across various simulated scenarios, quantifying sales lift/drop for different promotional mixes.
 
-ML Model
+---
 
-Gold Layer
+## 🚀 Final Prediction Results
 
-Trained Random Forest Regression Model for sales prediction.
+| Scenario           | Avg Predicted Sales | Change vs Baseline | Business Impact          |
+|-------------------|-------------------|------------------|-------------------------|
+| 01_Baseline_OFF    | 2.0797            | Baseline         | Sales without promotion |
+| 03_Feature_Only    | 2.1039            | +1.16%           | Minor predicted lift    |
+| 02_Voucher_Only    | 2.0121            | -3.25%           | Predicted sales drop    |
+| 05_Max_Combined    | 1.9261            | -7.39%           | Largest predicted drop  |
 
-✨ Key Features & Technical Highlights
-1. Advanced Feature Engineering
-Time Series: Sales timestamps were decomposed into cyclical features (hour_sin, hour_cos, cycle_day_x) to capture daily and weekly periodicity.
+### Key Business Insights
+- Promotions were often used reactively to clear poorly performing inventory rather than proactively boosting high-volume sellers.
+- The model learned: *"Promotions are associated with low sales."*
+- To measure true promotional lift, include a price or discount percentage feature.
+- By combining sales forecasts with lead times, the system can flag potential stockouts or overstocks within 7–14 days and help reduce spoilage/waste of perishable goods.
 
-Categorical Encoding: Item properties (brand, type) and Supermarket location (postal_code) were converted to numerical indices for use in the model.
+---
 
-Promotion Indexing: Non-numerical promotional features (feature, display) were indexed to create promo_feature_indexed and promo_display_indexed features.
+## ⚙️ Testing and Verification
 
-2. Robust Gold Layer Unification
-The final feature table (gold_df) was created using a multi-step Spark SQL process involving four tables (sales, item, supermarkets, promotion). A critical final WHERE clause ensures that only sales records with a corresponding, valid promotion record are retained, effectively performing a secure INNER JOIN on the promotion data.
+### Sales Data Tests
+- **Cyclical Feature Test:** Confirms correct decomposition of time variables (`hour`) into sine and cosine components.
+- **Null Imputation Test:** Ensures null values in sales-related features are imputed correctly.
 
-3. Model Training and Evaluation
-Model Used: Random Forest Regression (PySpark MLlib)
+### Item Data Tests
+- **Size Parsing & Consistency:** Verifies `size_value` and `size_unit` parsing.
+- **Categorical Indexing:** Confirms proper string indexing for `brand` and `type`.
 
-Performance: The final model achieved an R 
-2
-  of approximately 0.29 on the holdout test set. While not perfect, this score demonstrated a non-random correlation and sufficient predictive power to support directional analysis.
+### Supermarket Data Tests
+- **Postal Code Indexing:** Ensures postal codes are converted to numeric indices (`double` type).
 
-Data Quality Note: Initial attempts to include lag features led to severe data leakage, confirming the need for rigorous feature selection.
+### Promotion Data Tests
+- **Vector Assembler Test:** Confirms promotion categorical features are correctly indexed and assembled into a feature vector.
 
-🚀 "What-If" Analysis: Promotional Effectiveness
-The deployed model was used to predict sales for a target product (3000005040) across various simulated scenarios. The goal was to quantify the sales lift/drop for different promotional mixes compared to the baseline.
+### Gold Layer Join Logic Tests
+- **Unit Tests:** Implemented with `unittest` and PySpark.
+- **Focus:** Verification of the four-way join and `WHERE` filter behavior.
+- **Outcome:** Ensures only records with valid entries in all four tables are used for ML training.
 
-Final Prediction Results
-Scenario
+---
 
-Average Predicted Sales
+## Prerequisites and Setup
 
-Change from Baseline
+### Azure Resources
+- Azure Databricks Workspace with an active cluster.
+- Azure Data Lake Storage Gen2 (ADLS Gen2) account with the following empty containers:
+  - `raw-bronze`
+  - `cleaned-silver`
+  - `gold`
+  - `model`
+- An Azure Key Vault instance containing your ADLS Gen2 credentials.
 
-Business Impact
+---
 
-03_Feature_Only
+### Azure Key Vault Configuration
+1. **Create a Key Vault**
+   - Ensure it is in the same subscription/region as your Databricks workspace.
+   - Add two secrets to store your ADLS Gen2 credentials:
+     - `storageaccount` – Name of your ADLS Gen2 storage account
+     - `storagekey` – Full access key for your storage account
 
-2.1039
+2. **Grant Databricks Access**
+   - Assign the Databricks workspace Managed Identity **"Get"** and **"List"** permissions on the Key Vault secrets.
+   - This allows notebooks to read the secrets securely.
 
-+1.16%
-
-Minor Predicted Lift
-
-01_Baseline_OFF
-
-2.0797
-
-Baseline
-
-Sales without any promotion.
-
-02_Voucher_Only
-
-2.0121
-
--3.25%
-
-Predicted Sales Drop
-
-05_Max_Combined
-
-1.9261
-
--7.39%
-
-Largest Predicted Drop
-
-Key Business Insights
-
-Promotions were likely used reactively to clear poorly performing inventory, rather than proactively boosting high-volume sellers. The model correctly learned: "Promotions are associated with low sales." To truly measure promotional lift, a price feature or discount percentage feature is required to separate the impact of the price reduction from the baseline sales trend.
-
-Combining the sales forecast with the lead time for product delivery, the system can flag items that are projected to experience a stockout or overstock situation in the next 7-14 days. Identify perishable goods (e.g., fresh produce, baked goods) that have slow-moving trends or are frequently discounted, allowing management to reduce order quantities and minimize spoilage/waste.
-
-⚙️ Testing and Verification
-Sales Data Tests:
-
-Cyclical Feature Test: Confirms the accurate decomposition of the time variable (e.g., hour) into the sin and cos components, ensuring correct capture of periodicity.
-
-Null Imputation Test: Verifies that null values in sales-related features are correctly imputed with predefined fallback values.
-
-Item Data Tests:
-
-Size Parsing & Consistency: Ensures that item size strings are correctly parsed into a positive numeric value (size_value) and a consistent unit (size_unit).
-
-Categorical Indexing: Confirms the string indexing process for brand and type features.
-
-Supermarket Data Tests:
-
-Postal Code Indexing Test: Verifies that the postal-code feature is correctly encoded into a numeric index and that the output type is double.
-
-Promotion Data Tests:
-
-Vector Assembler Test: Confirms that promotion categorical features (feature, display) are correctly indexed and assembled into a feature vector for consumption by the ML model.
-
-Gold Layer Join Logic Tests (Pipeline Integrity)
-Unit tests were implemented using the unittest library and PySpark to confirm the integrity of the Gold layer:
-
-Test Focus: Verification of the complex four-way join and the final WHERE filter's behavior.
-
-Outcome: Tests confirmed that the filtering correctly retains only records that have a valid entry in all four primary source tables, ensuring the ML model is trained on a c
-omplete, unified feature set.
-
-# Prerequisites and Setup
-To run this project, you need the following:
-
-Azure Resources
-An Azure Databricks Workspace and an active cluster.
-
-An Azure Data Lake Storage Gen2 (ADLS Gen2) Account with four empty containers created:
-
-raw-bronze
-
-cleaned-silver
-
-gold
-
-model
-
-2. Databricks Secret Configuration (Required for Mounting)
-The mount-adlsg2-storage.ipynb notebook uses a secure method (Storage Account Key) via Databricks Secrets to authenticate and create permanent mount points.
-
-⚠️ SECURITY WARNING: The actual storage key is not stored in this public repository. You must set up your own secret scope and keys to run the notebook.
-
-Create a Secret Scope: Create a Databricks secret scope (e.g., using the Databricks CLI).
-
-Bash
-
-## Example using Databricks CLI
-databricks secrets create-scope --scope <your-scope-name>
-Add Required Secrets: Store your ADLS Gen2 credentials in the new scope using the following key names:
-
-Scope: sm-trans-sscope (or your chosen scope name)
-
-Key 1 (storageaccount): The name of your ADLS Gen2 storage account (e.g., mystorageacct123).
-
-Key 2 (strans-key): The full Access Key for your storage account.
-
-3. Execution Steps
-Import: Upload the mount-adlsg2-storage.ipynb notebook to your Databricks workspace.
-
-Connect: Attach the notebook to your running cluster.
-
-Run: Execute the mount-adlsg2-storage.ipynb notebook. If successful, you will have four new mount points accessible via DBFS:
-
-/mnt/raw-bronze
-
-/mnt/silver
-
-/mnt/gold
-
-/mnt/model
-
-You can verify the mounts by running dbutils.fs.ls("/mnt/").
+---
+
+### Databricks Notebook Setup
+1. **Mount ADLS Gen2 Storage Using Key Vault**
+```python
+# Read secrets from Azure Key Vault
+storage_account = dbutils.secrets.get(scope="azure-key-vault-scope", key="storageaccount")
+storage_key = dbutils.secrets.get(scope="azure-key-vault-scope", key="storagekey")
+
+configs = {
+    "fs.azure.account.key.{0}.dfs.core.windows.net".format(storage_account): storage_key
+}
+
+# Mount raw-bronze container
+dbutils.fs.mount(
+    source = f"abfss://raw-bronze@{storage_account}.dfs.core.windows.net/",
+    mount_point = "/mnt/raw-bronze",
+    extra_configs = configs
+)
+
+# Repeat mounts for silver, gold, and model containers
