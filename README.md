@@ -53,7 +53,7 @@ This pipeline processes four key datasets related to retail operations and promo
 
 ---
 
-## ⚙️ Testing and Verification
+##  Testing and Verification
 
 ### Sales Data Tests
 - **Cyclical Feature Test:** Confirms correct decomposition of time variables (`hour`) into sine and cosine components.
