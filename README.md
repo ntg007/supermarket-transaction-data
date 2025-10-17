@@ -1,7 +1,7 @@
 # supermarket-transaction-data
 Sales Forecasting and Promotional Effectiveness Analysis
 
-## 🎯 Project Goal
+##  Project Goal
 This project uses PySpark on a Databricks platform to build and evaluate a machine learning model for forecasting retail sales. The objective goes beyond simple prediction by enabling a "What-If" analysis tool to estimate the lift or drop in sales resulting from different promotional strategies (vouchers, in-store displays, and feature placement).
 
 ---
