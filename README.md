@@ -36,7 +36,7 @@ This pipeline processes four key datasets related to retail operations and promo
 
 ---
 
-## 🚀 Final Prediction Results
+##  Final Prediction Results
 
 | Scenario           | Avg Predicted Sales | Change vs Baseline | Business Impact          |
 |-------------------|-------------------|------------------|-------------------------|
