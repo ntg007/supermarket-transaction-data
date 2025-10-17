@@ -94,9 +94,11 @@ Predicted Sales Drop
 
 Largest Predicted Drop
 
-Key Business Insight
+Key Business Insights
 
 Promotions were likely used reactively to clear poorly performing inventory, rather than proactively boosting high-volume sellers. The model correctly learned: "Promotions are associated with low sales." To truly measure promotional lift, a price feature or discount percentage feature is required to separate the impact of the price reduction from the baseline sales trend.
+
+Combining the sales forecast with the lead time for product delivery, the system can flag items that are projected to experience a stockout or overstock situation in the next 7-14 days. Identify perishable goods (e.g., fresh produce, baked goods) that have slow-moving trends or are frequently discounted, allowing management to reduce order quantities and minimize spoilage/waste.
 
 ⚙️ Testing and Verification
 Sales Data Tests:
@@ -127,11 +129,10 @@ Test Focus: Verification of the complex four-way join and the final WHERE filter
 Outcome: Tests confirmed that the filtering correctly retains only records that have a valid entry in all four primary source tables, ensuring the ML model is trained on a c
 omplete, unified feature set.
 
-Prerequisites and Setup
-
+# Prerequisites and Setup
 To run this project, you need the following:
 
-1. Azure Resources
+Azure Resources
 An Azure Databricks Workspace and an active cluster.
 
 An Azure Data Lake Storage Gen2 (ADLS Gen2) Account with four empty containers created:
@@ -153,7 +154,7 @@ Create a Secret Scope: Create a Databricks secret scope (e.g., using the Databri
 
 Bash
 
-# Example using Databricks CLI
+## Example using Databricks CLI
 databricks secrets create-scope --scope <your-scope-name>
 Add Required Secrets: Store your ADLS Gen2 credentials in the new scope using the following key names:
 
