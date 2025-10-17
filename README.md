@@ -124,4 +124,57 @@ Unit tests were implemented using the unittest library and PySpark to confirm th
 
 Test Focus: Verification of the complex four-way join and the final WHERE filter's behavior.
 
-Outcome: Tests confirmed that the filtering correctly retains only records that have a valid entry in all four primary source tables, ensuring the ML model is trained on a complete, unified feature set.
+Outcome: Tests confirmed that the filtering correctly retains only records that have a valid entry in all four primary source tables, ensuring the ML model is trained on a c
+omplete, unified feature set.
+
+Prerequisites and Setup
+To run this project, you need the following:
+
+1. Azure Resources
+An Azure Databricks Workspace and an active cluster.
+
+An Azure Data Lake Storage Gen2 (ADLS Gen2) Account with four empty containers created:
+
+raw-bronze
+
+cleaned-silver
+
+gold
+
+model
+
+2. Databricks Secret Configuration (Required for Mounting)
+The mount-adlsg2-storage.ipynb notebook uses a secure method (Storage Account Key) via Databricks Secrets to authenticate and create permanent mount points.
+
+⚠️ SECURITY WARNING: The actual storage key is not stored in this public repository. You must set up your own secret scope and keys to run the notebook.
+
+Create a Secret Scope: Create a Databricks secret scope (e.g., using the Databricks CLI).
+
+Bash
+
+# Example using Databricks CLI
+databricks secrets create-scope --scope <your-scope-name>
+Add Required Secrets: Store your ADLS Gen2 credentials in the new scope using the following key names:
+
+Scope: sm-trans-sscope (or your chosen scope name)
+
+Key 1 (storageaccount): The name of your ADLS Gen2 storage account (e.g., mystorageacct123).
+
+Key 2 (strans-key): The full Access Key for your storage account.
+
+3. Execution Steps
+Import: Upload the mount-adlsg2-storage.ipynb notebook to your Databricks workspace.
+
+Connect: Attach the notebook to your running cluster.
+
+Run: Execute the mount-adlsg2-storage.ipynb notebook. If successful, you will have four new mount points accessible via DBFS:
+
+/mnt/raw-bronze
+
+/mnt/silver
+
+/mnt/gold
+
+/mnt/model
+
+You can verify the mounts by running dbutils.fs.ls("/mnt/").
